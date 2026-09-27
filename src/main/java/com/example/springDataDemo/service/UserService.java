@@ -4,6 +4,7 @@ import com.example.springDataDemo.dto.CreateUserDto;
 import com.example.springDataDemo.dto.UserDto;
 import com.example.springDataDemo.entities.User;
 import com.example.springDataDemo.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,5 +46,32 @@ public class UserService {
             User user = userRepository.findById(id).orElseThrow();
             userRepository.delete(user);
             return new UserDto(user.getId(), user.getName(), user.getEmail());
+    }
+
+    @Transactional
+    public UserDto updateById(CreateUserDto createUserDto , Long id) {
+
+        User user = userRepository.findById(id).orElseThrow();
+        user.setEmail(createUserDto.getEmail());
+        user.setName(createUserDto.getName());
+        User saveduser = userRepository.save(user);
+        return new UserDto(saveduser.getId(), saveduser.getName(), saveduser.getEmail());
+
+
+
+    }
+
+    @Transactional
+    public UserDto patchById(CreateUserDto createUserDto, Long id) {
+        User user = userRepository.findById(id).orElseThrow();
+        if (createUserDto.getName() != null){
+            user.setName(createUserDto.getName());
+        }
+        if (createUserDto.getEmail() != null){
+            user.setEmail(createUserDto.getEmail());
+        }
+        User saveduser = userRepository.save(user);
+        return new UserDto(saveduser.getId(), saveduser.getName(), saveduser.getEmail());
+
     }
 }

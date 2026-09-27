@@ -36,5 +36,16 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUserById(id));
     }
 
+    @PutMapping("/users/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id ,@RequestBody CreateUserDto createUserDto){
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateById(createUserDto , id));
+    }
+
+    @PatchMapping("/users/{id}")
+    public ResponseEntity<UserDto> patchUser(@PathVariable Long id ,@RequestBody CreateUserDto createUserDto){
+        return ResponseEntity.status(HttpStatus.OK).body(userService.patchById(createUserDto , id));
+    }
+
+
 
 }
