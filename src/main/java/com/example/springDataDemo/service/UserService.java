@@ -6,6 +6,10 @@ import com.example.springDataDemo.entities.User;
 import com.example.springDataDemo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -73,5 +77,16 @@ public class UserService {
         User saveduser = userRepository.save(user);
         return new UserDto(saveduser.getId(), saveduser.getName(), saveduser.getEmail());
 
+    }
+
+    public List<UserDto> getAllUsersPaginated(int page, int pageSize, String direction, String sortBy) {
+        Sort sort;
+        sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() :
+                Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page,pageSize,sort);
+        Page<User> usersPage = userRepository.findAll(pageable);
+        List<UserDto> userDtos = new ArrayList<>();
+        usersPage.forEach(user -> userDtos.add(new UserDto(user.getId() , user.getEmail(), user.getName())));
+        return userDtos;
     }
 }

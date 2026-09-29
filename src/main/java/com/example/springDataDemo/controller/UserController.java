@@ -26,6 +26,12 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.getAllUsers());
     }
 
+    @GetMapping("/page")
+    public ResponseEntity<List<UserDto>> getUsersPaginated(@RequestParam int page , @RequestParam int pageSize, @RequestParam(defaultValue = "asc") String direction,
+                                                           @RequestParam(defaultValue = "name")String sortBy){
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getAllUsersPaginated(page,pageSize,direction,sortBy));
+    }
+
     @GetMapping("/users/{id}")
     public  ResponseEntity<UserDto> getUserById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.getUserById(id));
@@ -45,7 +51,6 @@ public class UserController {
     public ResponseEntity<UserDto> patchUser(@PathVariable Long id ,@RequestBody CreateUserDto createUserDto){
         return ResponseEntity.status(HttpStatus.OK).body(userService.patchById(createUserDto , id));
     }
-
 
 
 }

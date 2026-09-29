@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/users/{userId}/orders")
@@ -20,6 +22,14 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(userId , createOrderDto));
 
     }
+
+    @GetMapping
+    public ResponseEntity<List<OrderDto>> getOrderByUserId(@PathVariable long userId){
+          return  ResponseEntity.status(HttpStatus.OK).body(orderService.getOrderByUserId(userId));
+    }
+
+
+
 
 
 
