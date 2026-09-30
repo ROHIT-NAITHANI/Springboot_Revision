@@ -5,6 +5,7 @@ import com.example.springDataDemo.dto.OrderDto;
 import com.example.springDataDemo.dto.UserDto;
 import com.example.springDataDemo.entities.Order;
 import com.example.springDataDemo.entities.User;
+import com.example.springDataDemo.exception.UserNotFoundException;
 import com.example.springDataDemo.repository.OrderRepository;
 import com.example.springDataDemo.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -24,8 +25,11 @@ public class OrderService {
 
     @Transactional
     public OrderDto createOrder(long userId, CreateOrderDto createOrderDto) {
+
+        User user = userRepository.findById(userId).
+                orElseThrow(() -> new UserNotFoundException("User not found with id " + userId));
+
         Order order = new Order();
-        User user= userRepository.findById(userId).orElseThrow();
         order.setUser(user);
         order.setProductName(createOrderDto.getProductName());
         Order saved = orderRepository.save(order);

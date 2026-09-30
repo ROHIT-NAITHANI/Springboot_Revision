@@ -3,6 +3,7 @@ package com.example.springDataDemo.service;
 import com.example.springDataDemo.dto.CreateUserDto;
 import com.example.springDataDemo.dto.UserDto;
 import com.example.springDataDemo.entities.User;
+import com.example.springDataDemo.exception.UserNotFoundException;
 import com.example.springDataDemo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -42,7 +43,8 @@ public class UserService {
     }
 
     public UserDto getUserById(Long id) {
-        User user = userRepository.findById(id).orElseThrow();
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id" + id));
+
         return new UserDto(user.getId(), user.getName(), user.getEmail());
     }
 
