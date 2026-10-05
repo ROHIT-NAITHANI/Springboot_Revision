@@ -12,41 +12,36 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
 
-
-    @GetMapping("/users")
-    public ResponseEntity<List<UserDto>> getUsers(){
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getAllUsers());
+    // USER
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> getMe(){
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getCurrentUser());
     }
 
-    @GetMapping("/page")
-    public ResponseEntity<List<UserDto>> getUsersPaginated(@RequestParam int page , @RequestParam int pageSize, @RequestParam(defaultValue = "asc") String direction,
-                                                           @RequestParam(defaultValue = "name")String sortBy){
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getAllUsersPaginated(page,pageSize,direction,sortBy));
+    @PutMapping("/me")
+    public ResponseEntity<UserDto> updateUser(@RequestBody CreateUserDto createUserDto){
+        return ResponseEntity.status(HttpStatus.OK).body(userService.updateCurrentUser(createUserDto));
     }
 
-    @GetMapping("/users/{id}")
+    // ADMIN
+    @GetMapping()
+    public ResponseEntity<List<UserDto>> getUsersPaginated(@RequestParam int page , @RequestParam int pageSize){
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getAllUsersPaginated(page,pageSize));
+    }
+
+    @GetMapping("/{id}")
     public  ResponseEntity<UserDto> getUserById(@PathVariable Long id){
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.getUserById(id));
     }
 
-    @DeleteMapping("/users/delete/{id}")
-    public  ResponseEntity<UserDto> deleteUser(@PathVariable Long id){
-        return ResponseEntity.status(HttpStatus.OK).body(userService.deleteUserById(id));
+    @DeleteMapping("/{id}")
+    public  ResponseEntity<Void> deleteUser(@PathVariable Long id){
+        userService.deleteUserById(id);
+        return ResponseEntity.noContent().build();
     }
-
-    @PutMapping("/users/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id ,@RequestBody CreateUserDto createUserDto){
-        return ResponseEntity.status(HttpStatus.OK).body(userService.updateById(createUserDto , id));
-    }
-
-    @PatchMapping("/users/{id}")
-    public ResponseEntity<UserDto> patchUser(@PathVariable Long id ,@RequestBody CreateUserDto createUserDto){
-        return ResponseEntity.status(HttpStatus.OK).body(userService.patchById(createUserDto , id));
-    }
-
 
 }

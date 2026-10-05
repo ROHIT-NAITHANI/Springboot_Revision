@@ -11,10 +11,12 @@ import com.example.springDataDemo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.aspectj.weaver.ast.Or;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -23,26 +25,69 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
+    private OrderDto map(Order order){
+        User user = order.getUser();
+        return new OrderDto(order.getId(),
+                order.getProductName(),
+                new UserDto(user.getId(), user.getName(), user.getEmail()));
+    }
+
+    private User getLoggedInUser(){
+        String email = Objects.requireNonNull(SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
+                .getName();
+
+        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+    }
+
     @Transactional
-    public OrderDto createOrder(long userId, CreateOrderDto createOrderDto) {
-
-        User user = userRepository.findById(userId).
-                orElseThrow(() -> new UserNotFoundException("User not found with id " + userId));
-
+    public OrderDto createOrder(CreateOrderDto createOrderDto) {
+        User user = getLoggedInUser();
         Order order = new Order();
         order.setUser(user);
         order.setProductName(createOrderDto.getProductName());
         Order saved = orderRepository.save(order);
-        return new OrderDto(saved.getId(), saved.getProductName(), new UserDto(saved.getUser().getId(), saved.getUser().getName(), saved.getUser().getEmail()));
+        return map(saved);
     }
 
-    public List<OrderDto> getOrderByUserId(long userId) {
-        List<Order> byUserId = orderRepository.findByUserId(userId);
-        List<OrderDto> orderDtos = new ArrayList<>();
-        for (Order order : byUserId){
-            OrderDto orderDto = new OrderDto(order.getId(), order.getProductName(),new UserDto(order.getUser().getId(), order.getUser().getName(),order.getUser().getEmail()));
-            orderDtos.add(orderDto);
+
+    public List<OrderDto> getMyOrders() {
+        User user =getLoggedInUser();
+        return orderRepository.findByUserId(user.getId())
+                .stream()
+                .map(this::map)
+                .toList();
+    }
+
+    public OrderDto getMyOrder(Long id) {
+        User user = getLoggedInUser();
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getUser().getId().equals(user.getId())){
+            throw new RuntimeException("Access denied");
         }
-        return orderDtos;
+
+        return map(order);
+    }
+
+    public List<OrderDto> getAllOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(this::map)
+                .toList();
+
+    }
+
+    public List<OrderDto> getOrderbyUser(Long id) {
+        return orderRepository.findByUserId(id)
+                .stream()
+                .map(this::map)
+                .toList();
+    }
+
+    public void deleteMyOrder(Long id) {
+        orderRepository.deleteById(id);
     }
 }

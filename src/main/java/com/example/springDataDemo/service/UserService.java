@@ -13,10 +13,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -24,71 +26,49 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserDto saveUser(CreateUserDto createUserDto){
-        User user = new User();
-        user.setEmail(createUserDto.getEmail());
-        user.setName(createUserDto.getName());
-        User savedUser = userRepository.save(user);
-        return new UserDto(savedUser.getId(),savedUser.getName(),savedUser.getEmail());
+    private UserDto map(User user){
+        return new UserDto(user.getId(),user.getName(),user.getEmail());
     }
 
-    public List<UserDto> getAllUsers(){
-        List<User> list = userRepository.findAll();
-        List<UserDto> userDtos = new ArrayList<>();
-        for (User user : list){
-            UserDto userDto = new UserDto(user.getId() , user.getEmail(), user.getName());
-            userDtos.add(userDto);
-        }
-        return userDtos;
+    private User getLoggedInUser(){
+        String email = Objects.requireNonNull(SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
+                .getName();
+
+        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
     }
+
 
     public UserDto getUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found with id" + id));
 
-        return new UserDto(user.getId(), user.getName(), user.getEmail());
+        return map(user);
     }
 
-    public UserDto deleteUserById(Long id) {
-            User user = userRepository.findById(id).orElseThrow();
-            userRepository.delete(user);
-            return new UserDto(user.getId(), user.getName(), user.getEmail());
+    public void deleteUserById(Long id) {
+            userRepository.deleteById(id);
+    }
+
+
+    public List<UserDto> getAllUsersPaginated(int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page,pageSize);
+        return userRepository.findAll(pageable)
+                .map(this::map)
+                .getContent();
+
+    }
+
+    public UserDto getCurrentUser() {
+        User user = getLoggedInUser();
+        return map(user);
     }
 
     @Transactional
-    public UserDto updateById(CreateUserDto createUserDto , Long id) {
-
-        User user = userRepository.findById(id).orElseThrow();
+    public UserDto updateCurrentUser(CreateUserDto createUserDto) {
+        User user = getLoggedInUser();
         user.setEmail(createUserDto.getEmail());
         user.setName(createUserDto.getName());
-        User saveduser = userRepository.save(user);
-        return new UserDto(saveduser.getId(), saveduser.getName(), saveduser.getEmail());
-
-
-
-    }
-
-    @Transactional
-    public UserDto patchById(CreateUserDto createUserDto, Long id) {
-        User user = userRepository.findById(id).orElseThrow();
-        if (createUserDto.getName() != null){
-            user.setName(createUserDto.getName());
-        }
-        if (createUserDto.getEmail() != null){
-            user.setEmail(createUserDto.getEmail());
-        }
-        User saveduser = userRepository.save(user);
-        return new UserDto(saveduser.getId(), saveduser.getName(), saveduser.getEmail());
-
-    }
-
-    public List<UserDto> getAllUsersPaginated(int page, int pageSize, String direction, String sortBy) {
-        Sort sort;
-        sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() :
-                Sort.by(sortBy).descending();
-        Pageable pageable = PageRequest.of(page,pageSize,sort);
-        Page<User> usersPage = userRepository.findAll(pageable);
-        List<UserDto> userDtos = new ArrayList<>();
-        usersPage.forEach(user -> userDtos.add(new UserDto(user.getId() , user.getEmail(), user.getName())));
-        return userDtos;
+        return map(user);
     }
 }

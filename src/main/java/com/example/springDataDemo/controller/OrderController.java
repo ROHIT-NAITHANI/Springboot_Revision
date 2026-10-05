@@ -13,20 +13,45 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-//@RequestMapping("/api/v1/users/{userId}/orders")
+@RequestMapping("/api/v1/orders")
 public class OrderController {
     private final OrderService orderService;
 
+//    User
     @PostMapping
-    public ResponseEntity<OrderDto> createOrder(@PathVariable long userId , @RequestBody CreateOrderDto createOrderDto){
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(userId , createOrderDto));
+    public ResponseEntity<OrderDto> createOrder(@RequestBody CreateOrderDto createOrderDto){
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(createOrderDto));
 
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<List<OrderDto>> getMyOrders(){
+          return  ResponseEntity.status(HttpStatus.OK).body(orderService.getMyOrders());
+    }
+
+    @GetMapping("/my/{id}")
+    public ResponseEntity<OrderDto> getMyOrder(@PathVariable Long id){
+        return  ResponseEntity.ok(orderService.getMyOrder(id));
+    }
+
+
+//    Admin
     @GetMapping
-    public ResponseEntity<List<OrderDto>> getOrderByUserId(@PathVariable long userId){
-          return  ResponseEntity.status(HttpStatus.OK).body(orderService.getOrderByUserId(userId));
+    public ResponseEntity<List<OrderDto>> getAllOrders(){
+        return ResponseEntity.ok(orderService.getAllOrders());
     }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<OrderDto>> getOrderByUser(@PathVariable Long id){
+        return ResponseEntity.ok(orderService.getOrderbyUser(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteMyOrder(@PathVariable Long id){
+        orderService.deleteMyOrder(id);
+        return ResponseEntity.noContent().build();
+    }
+
 
 
 
