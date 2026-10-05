@@ -15,12 +15,7 @@ import java.util.List;
 @RequestMapping("/api/v1")
 public class UserController {
     private final UserService userService;
-    @PostMapping("/users")
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody CreateUserDto createUserDto){
 
-      return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveUser(createUserDto));
-
-    }
 
     @GetMapping("/users")
     public ResponseEntity<List<UserDto>> getUsers(){
