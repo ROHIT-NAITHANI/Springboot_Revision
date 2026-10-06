@@ -1,9 +1,6 @@
 package com.example.springDataDemo.controller;
 
-import com.example.springDataDemo.dto.CreateUserDto;
-import com.example.springDataDemo.dto.LoginDto;
-import com.example.springDataDemo.dto.LoginResponseDto;
-import com.example.springDataDemo.dto.RegisterUserResponseDto;
+import com.example.springDataDemo.dto.*;
 import com.example.springDataDemo.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +20,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginDto loginDto){
         return ResponseEntity.status(HttpStatus.OK).body(authService.login(loginDto));
+    }
+
+    @GetMapping("/RefreshToken")
+    public ResponseEntity<AccessTokenResponseDto> refresh(@RequestBody RefreshTokenDto refreshTokenDto){
+        return ResponseEntity.ok(authService.refreshAccessToken(refreshTokenDto));
+
     }
 
 

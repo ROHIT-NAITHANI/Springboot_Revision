@@ -19,8 +19,17 @@ public class JwtService {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String genrateJwtToken(UserDetails userDetails){
+    public String generateJwtAccessToken(UserDetails userDetails){
         return Jwts.builder().subject(userDetails.getUsername()).issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))
+                .claim("tokenType", "ACCESS")
+                .signWith(getKey())
+                .compact();
+    }
+
+    public String generateJwtRefreshToken(UserDetails userDetails){
+        return Jwts.builder().subject(userDetails.getUsername())
+                .issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7))
+                .claim("tokenType", "REFRESH")
                 .signWith(getKey())
                 .compact();
     }
