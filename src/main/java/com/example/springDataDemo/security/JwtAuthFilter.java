@@ -26,6 +26,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         if(header == null || !header.startsWith("Bearer ")){
             filterChain.doFilter(request,response);
+            return;
 
         }
 
@@ -33,6 +34,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try{
             String token = header.substring(7);
             Claims claims = jwtService.parseToken(token);
+            String tokenType = claims.get("tokenType", String.class);
+            if (!"ACCESS".equals(tokenType)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String email = claims.getSubject();
 
             UserDetails user = userDetailsService.loadUserByUsername(email);
