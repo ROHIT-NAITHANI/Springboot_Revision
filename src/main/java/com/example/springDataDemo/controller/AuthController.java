@@ -22,7 +22,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(authService.login(loginDto));
     }
 
-    @GetMapping("/RefreshToken")
+    @PostMapping("/RefreshToken")
     public ResponseEntity<AccessTokenResponseDto> refresh(@RequestBody RefreshTokenDto refreshTokenDto){
         return ResponseEntity.ok(authService.refreshAccessToken(refreshTokenDto));
 
